@@ -3,19 +3,11 @@ import { MapPin, ArrowRight } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import PageHero from "@/components/layout/PageHero";
 import heroBg from "@/assets/hero-bg.jpg";
-
-const opportunities = [
-  { title: "Strategic Land Promotion — South East", location: "South East, UK", type: "Strategic Development", status: "Active" },
-  { title: "Mixed-Use Regeneration Scheme", location: "Northern England", type: "Regeneration", status: "Active" },
-  { title: "Hotel Repositioning Opportunity", location: "Coastal Resort, UK", type: "Asset Repositioning", status: "Active" },
-  { title: "Development Partnership — Greater London", location: "Greater London", type: "Development Partnership", status: "Active" },
-  { title: "Commercial Redevelopment Site", location: "Midlands, UK", type: "Commercial", status: "Pipeline" },
-  { title: "Luxury Residential Development", location: "South West, UK", type: "Residential", status: "Pipeline" },
-  { title: "Strategic Land — New York Tri-State", location: "New York, US", type: "Strategic Development", status: "Pipeline" },
-  { title: "Resort & Spa Repositioning", location: "Florida, US", type: "Hospitality", status: "Pipeline" },
-];
+import { useOpportunities } from "@/sanity/hooks";
 
 const OpportunitiesPage = () => {
+  const { data: opportunities, isLoading, isError } = useOpportunities();
+
   return (
     <Layout>
       <PageHero
@@ -36,22 +28,59 @@ const OpportunitiesPage = () => {
 
       <section className="py-20 bg-card">
         <div className="container-wide">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {opportunities.map((opp) => (
-              <div key={opp.title} className="border border-border p-8 hover:border-gold/40 transition-all">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs tracking-wider uppercase text-gold">{opp.type}</span>
-                  <span className={`text-xs tracking-wider uppercase px-3 py-1 ${opp.status === "Active" ? "bg-gold/10 text-gold" : "bg-muted text-muted-foreground"}`}>
-                    {opp.status}
-                  </span>
+          {isLoading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="border border-border p-8 animate-pulse">
+                  <div className="h-4 bg-muted rounded w-1/3 mb-4" />
+                  <div className="h-6 bg-muted rounded w-2/3 mb-2" />
+                  <div className="h-4 bg-muted rounded w-1/2" />
                 </div>
-                <h3 className="font-heading text-xl text-navy mb-2">{opp.title}</h3>
-                <p className="text-muted-foreground text-sm flex items-center gap-2">
-                  <MapPin className="w-3.5 h-3.5 text-gold" /> {opp.location}
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+
+          {isError && (
+            <p className="text-center text-muted-foreground py-12">
+              Unable to load opportunities. Please try again shortly.
+            </p>
+          )}
+
+          {!isLoading && !isError && opportunities && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {opportunities.map((opp) => (
+                <div key={opp._id} className="border border-border p-8 hover:border-gold/40 transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs tracking-wider uppercase text-gold">{opp.type}</span>
+                    <span
+                      className={`text-xs tracking-wider uppercase px-3 py-1 ${
+                        opp.status === "Active"
+                          ? "bg-gold/10 text-gold"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {opp.status}
+                    </span>
+                  </div>
+                  <h3 className="font-heading text-xl text-navy mb-2">{opp.title}</h3>
+                  {opp.location && (
+                    <p className="text-muted-foreground text-sm flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-gold" /> {opp.location}
+                    </p>
+                  )}
+                  {opp.description && (
+                    <p className="text-muted-foreground text-sm mt-3 leading-relaxed">{opp.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!isLoading && !isError && opportunities?.length === 0 && (
+            <p className="text-center text-muted-foreground py-12">
+              No opportunities currently listed. Check back soon.
+            </p>
+          )}
         </div>
       </section>
 
@@ -61,7 +90,10 @@ const OpportunitiesPage = () => {
           <p className="text-cream/60 mb-8 max-w-xl mx-auto text-sm">
             Introductions welcomed from landowners, developers, banks, investors and agents.
           </p>
-          <Link to="/submit-opportunity" className="px-8 py-3.5 border border-gold text-gold text-sm tracking-widest uppercase hover:bg-gold hover:text-navy transition-all">
+          <Link
+            to="/submit-opportunity"
+            className="px-8 py-3.5 border border-gold text-gold text-sm tracking-widest uppercase hover:bg-gold hover:text-navy transition-all"
+          >
             Submit Opportunity <ArrowRight className="w-4 h-4 inline ml-2" />
           </Link>
         </div>

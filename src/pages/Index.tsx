@@ -3,17 +3,14 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Building2, TrendingUp, Landmark, MapPin, Hammer, Eye, Paintbrush, Users, Zap, HardHat } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import heroBg from "@/assets/hero-bg.jpg";
-import marinaDev from "@/assets/marina-development.jpg";
-import mixedUse from "@/assets/mixed-use-development.jpg";
-import hotelRepo from "@/assets/hotel-repositioning.jpg";
-import strategicLand from "@/assets/strategic-land.jpg";
-import luxuryRes from "@/assets/luxury-residential.jpg";
-import urbanRedev from "@/assets/urban-redevelopment.jpg";
 import ukRegion from "@/assets/uk-region.jpg";
 import usRegion from "@/assets/us-region.jpg";
 import founderImg from "@/assets/founder-portrait.jpg";
 import heroVideo from "@/assets/Luxury Real Estate - Luma_5.mp4";
+import { useFeaturedOpportunities, useFeaturedDevelopment, useSiteSettings, useTeamMembers, useOpportunityTypes } from "@/sanity/hooks";
+import { urlFor } from "@/sanity/client";
 
+// Static data — not client-editable (structural/branding content)
 const platformDivisions = [
   {
     icon: Building2,
@@ -44,15 +41,6 @@ const deliveryCapabilities = [
   { icon: Users, title: "Public Consultation", desc: "Stakeholder engagement strategy and public consultation delivery." },
 ];
 
-const opportunityTypes = [
-  { title: "Strategic Land", image: strategicLand, href: "/opportunities" },
-  { title: "Mixed-Use Regeneration", image: mixedUse, href: "/opportunities" },
-  { title: "Asset Repositioning", image: hotelRepo, href: "/opportunities" },
-  { title: "Hospitality Development", image: marinaDev, href: "/opportunities" },
-  { title: "Urban Redevelopment", image: urbanRedev, href: "/opportunities" },
-  { title: "Luxury Residential", image: luxuryRes, href: "/opportunities" },
-];
-
 const clientTypes = [
   {
     title: "Landowners",
@@ -74,13 +62,21 @@ const clientTypes = [
 const Index = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Sanity data
+  const { data: settings } = useSiteSettings();
+  const { data: featuredOpportunities } = useFeaturedOpportunities();
+  const { data: featuredDev } = useFeaturedDevelopment();
+  const { data: teamMembers } = useTeamMembers();
+  const { data: opportunityTypes } = useOpportunityTypes();
+
+  const founder = teamMembers?.[0];
+
   useEffect(() => {
     if (videoRef.current) {
-      // Force defaultMuted to satisfy iOS Safari strict autoplay policies
       videoRef.current.defaultMuted = true;
       videoRef.current.muted = true;
       videoRef.current.play().catch(error => {
-        console.error("Video autoplay failed (Low Power Mode or strict Safari policy):", error);
+        console.error("Video autoplay failed:", error);
       });
     }
   }, []);
@@ -109,7 +105,7 @@ const Index = () => {
             </span>
           </div>
           <h1 className="font-heading text-4xl md:text-5xl lg:text-7xl text-cream mb-2 leading-tight">
-            WOLLASTON HANKS
+            {settings?.heroTitle ?? "WOLLASTON HANKS"}
           </h1>
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="w-12 h-px bg-gold/60" />
@@ -117,10 +113,10 @@ const Index = () => {
             <div className="w-12 h-px bg-gold/60" />
           </div>
           <p className="text-cream/80 text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-4">
-            Planning-Led Strategic Development & Investment Platform
+            {settings?.heroSubtitle ?? "Planning-Led Strategic Development & Investment Platform"}
           </p>
           <p className="text-cream/60 text-base max-w-2xl mx-auto mb-10">
-            Wollaston Hanks originates, structures and delivers complex real estate opportunities through planning intelligence, development strategy, asset repositioning and capital partnerships.
+            {settings?.heroDescription ?? "Wollaston Hanks originates, structures and delivers complex real estate opportunities through planning intelligence, development strategy, asset repositioning and capital partnerships."}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -219,60 +215,52 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Section 5 — Featured Case Study */}
-      <section className="py-20 bg-card">
-        <div className="container-wide">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="text-gold text-xs tracking-[0.2em] uppercase mb-4 block">Featured Deal</span>
-              <h2 className="font-heading text-3xl md:text-4xl text-navy mb-6">
-                Marina Resort & Spa Development
-              </h2>
-              <div className="gold-divider-left mb-8" />
-              <p className="text-muted-foreground leading-relaxed mb-8">
-                A transformative acquisition and development opportunity — from strategic site identification through planning uplift to significant value creation. This project exemplifies the Wollaston Hanks approach to originating and delivering complex real estate.
-              </p>
-              <ul className="space-y-3 text-muted-foreground text-sm mb-8">
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
-                  Acquisition strategy and site secured for £2M
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
-                  Planning uplift delivered through strategic land promotion
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
-                  Transformation from underperforming asset to major resort development
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
-                  Estimated project value now in the billions
-                </li>
-              </ul>
-              <Link
-                to="/developments"
-                className="inline-flex items-center gap-2 px-6 py-3 border border-gold text-gold text-sm tracking-wider uppercase hover:bg-gold hover:text-navy transition-all"
-              >
-                View Developments <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="relative">
-              <img
-                src={marinaDev}
-                alt="Marina Resort Development"
-                className="w-full aspect-[4/3] object-cover"
-                loading="lazy"
-                width={1280}
-                height={720}
-              />
-              <div className="absolute inset-0 border border-gold/20" />
+      {/* Section 5 — Featured Case Study (dynamic from Sanity) */}
+      {featuredDev && (
+        <section className="py-20 bg-card">
+          <div className="container-wide">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <span className="text-gold text-xs tracking-[0.2em] uppercase mb-4 block">Featured Deal</span>
+                <h2 className="font-heading text-3xl md:text-4xl text-navy mb-6">{featuredDev.title}</h2>
+                <div className="gold-divider-left mb-8" />
+                <p className="text-muted-foreground leading-relaxed mb-8">{featuredDev.description}</p>
+                {featuredDev.bulletPoints && featuredDev.bulletPoints.length > 0 && (
+                  <ul className="space-y-3 text-muted-foreground text-sm mb-8">
+                    {featuredDev.bulletPoints.map((point, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Link
+                  to="/developments"
+                  className="inline-flex items-center gap-2 px-6 py-3 border border-gold text-gold text-sm tracking-wider uppercase hover:bg-gold hover:text-navy transition-all"
+                >
+                  View Developments <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+              <div className="relative">
+                {featuredDev.image ? (
+                  <img
+                    src={urlFor(featuredDev.image).width(900).height(675).url()}
+                    alt={featuredDev.image.alt ?? featuredDev.title}
+                    className="w-full aspect-[4/3] object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full aspect-[4/3] bg-muted" />
+                )}
+                <div className="absolute inset-0 border border-gold/20 pointer-events-none" />
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Section 6 — Opportunity Types */}
+      {/* Section 6 — Opportunity Types (dynamic from Sanity, falls back gracefully) */}
       <section className="py-20 bg-cream">
         <div className="container-wide">
           <div className="text-center mb-14">
@@ -282,28 +270,37 @@ const Index = () => {
               Complex real estate opportunities requiring planning expertise, strategic vision and capital structuring.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {opportunityTypes.map((type) => (
-              <Link key={type.title} to={type.href} className="group relative overflow-hidden aspect-[3/2]">
-                <img
-                  src={type.image}
-                  alt={type.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-navy-dark/90 via-navy/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="font-heading text-lg text-cream group-hover:text-gold transition-colors">
-                    {type.title}
-                  </h3>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {opportunityTypes && opportunityTypes.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {opportunityTypes.map((type) => (
+                <Link key={type._id} to="/opportunities" className="group relative overflow-hidden aspect-[3/2]">
+                  <img
+                    src={urlFor(type.image).width(600).height(400).url()}
+                    alt={type.image.alt ?? type.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy-dark/90 via-navy/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <h3 className="font-heading text-lg text-cream group-hover:text-gold transition-colors">
+                      {type.title}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            // Skeleton placeholders while loading / before content is added in CMS
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="aspect-[3/2] bg-muted animate-pulse" />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Section 7 — Current Opportunities */}
+      {/* Section 7 — Current Opportunities (dynamic from Sanity) */}
       <section className="py-20 bg-navy">
         <div className="container-wide">
           <div className="text-center mb-14">
@@ -311,22 +308,31 @@ const Index = () => {
             <h2 className="font-heading text-3xl md:text-4xl text-cream mb-4">Active Opportunities</h2>
             <div className="gold-divider" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { title: "Strategic Land Promotion", location: "South East, UK", type: "Development" },
-              { title: "Mixed-Use Regeneration Site", location: "Northern England", type: "Regeneration" },
-              { title: "Hotel Repositioning", location: "Coastal Resort", type: "Repositioning" },
-              { title: "Development Partnership", location: "Greater London", type: "Partnership" },
-            ].map((opp) => (
-              <div key={opp.title} className="border border-gold/20 p-6 hover:border-gold/40 transition-all">
-                <span className="text-gold text-xs tracking-wider uppercase">{opp.type}</span>
-                <h3 className="font-heading text-lg text-cream mt-3 mb-2">{opp.title}</h3>
-                <p className="text-cream/50 text-sm flex items-center gap-2">
-                  <MapPin className="w-3.5 h-3.5" /> {opp.location}
-                </p>
-              </div>
-            ))}
-          </div>
+          {featuredOpportunities && featuredOpportunities.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredOpportunities.map((opp) => (
+                <div key={opp._id} className="border border-gold/20 p-6 hover:border-gold/40 transition-all">
+                  <span className="text-gold text-xs tracking-wider uppercase">{opp.type}</span>
+                  <h3 className="font-heading text-lg text-cream mt-3 mb-2">{opp.title}</h3>
+                  {opp.location && (
+                    <p className="text-cream/50 text-sm flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5" /> {opp.location}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="border border-gold/20 p-6 animate-pulse">
+                  <div className="h-3 bg-gold/20 rounded w-1/2 mb-4" />
+                  <div className="h-5 bg-cream/10 rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-cream/10 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
             <Link
               to="/opportunities"
@@ -399,33 +405,59 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Section 10 — Founder */}
+      {/* Section 10 — Founder (dynamic from Sanity) */}
       <section className="py-20 bg-card">
         <div className="container-wide">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
               <span className="text-gold text-xs tracking-[0.2em] uppercase mb-4 block">Leadership</span>
-              <h2 className="font-heading text-3xl md:text-4xl text-navy mb-2">Beau Banks</h2>
+              <h2 className="font-heading text-3xl md:text-4xl text-navy mb-2">
+                {founder?.name ?? "Beau Banks"}
+              </h2>
               <p className="text-muted-foreground text-sm mb-6">
-                Founder & Development Director<br />
-                BSc (Hons), MSc (Planning for Major Projects), MRTPI, MNAEA
+                {founder?.jobTitle ?? "Founder & Development Director"}
+                {(founder?.credentials ?? "BSc (Hons), MSc (Planning for Major Projects), MRTPI, MNAEA") && (
+                  <>
+                    <br />
+                    {founder?.credentials ?? "BSc (Hons), MSc (Planning for Major Projects), MRTPI, MNAEA"}
+                  </>
+                )}
               </p>
               <div className="gold-divider-left mb-6" />
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                Beau Banks founded Wollaston Hanks to originate and deliver complex development opportunities through planning expertise and strategic project delivery. With qualifications spanning town planning and real estate, Beau brings institutional-grade thinking to every development opportunity.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                His approach combines deep planning knowledge with commercial acumen, enabling Wollaston Hanks to identify, structure and deliver opportunities that others overlook.
-              </p>
+              {founder?.bio && founder.bio.length > 0 ? (
+                founder.bio.map((block, i) => (
+                  <p key={block._key ?? i} className="text-muted-foreground leading-relaxed mb-6">
+                    {block.children?.map((child) => child.text).join("")}
+                  </p>
+                ))
+              ) : (
+                <>
+                  <p className="text-muted-foreground leading-relaxed mb-6">
+                    Beau Banks founded Wollaston Hanks to originate and deliver complex development opportunities through planning expertise and strategic project delivery. With qualifications spanning town planning and real estate, Beau brings institutional-grade thinking to every development opportunity.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    His approach combines deep planning knowledge with commercial acumen, enabling Wollaston Hanks to identify, structure and deliver opportunities that others overlook.
+                  </p>
+                </>
+              )}
             </div>
             <div className="order-1 lg:order-2 flex justify-center">
               <div className="relative">
-                <img
-                  src={founderImg}
-                  alt="Beau Banks - Founder & Development Director"
-                  className="w-80 aspect-[4/5] object-cover"
-                  loading="lazy"
-                />
+                {founder?.image ? (
+                  <img
+                    src={urlFor(founder.image).width(320).height(400).url()}
+                    alt={founder.image.alt ?? founder.name}
+                    className="w-80 aspect-[4/5] object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <img
+                    src={founderImg}
+                    alt="Beau Banks - Founder & Development Director"
+                    className="w-80 aspect-[4/5] object-cover"
+                    loading="lazy"
+                  />
+                )}
                 <div className="absolute inset-0 border border-gold/20" />
               </div>
             </div>

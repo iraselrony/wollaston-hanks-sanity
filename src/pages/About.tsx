@@ -4,8 +4,13 @@ import Layout from "@/components/layout/Layout";
 import PageHero from "@/components/layout/PageHero";
 import heroBg from "@/assets/hero-bg.jpg";
 import founderImg from "@/assets/founder-portrait.jpg";
+import { useTeamMembers } from "@/sanity/hooks";
+import { urlFor } from "@/sanity/client";
 
 const AboutPage = () => {
+  const { data: teamMembers } = useTeamMembers();
+  const founder = teamMembers?.[0];
+
   return (
     <Layout>
       <PageHero
@@ -35,24 +40,54 @@ const AboutPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="flex justify-center">
               <div className="relative">
-                <img src={founderImg} alt="Beau Banks" className="w-80 aspect-[4/5] object-cover" loading="lazy" />
+                {founder?.image ? (
+                  <img
+                    src={urlFor(founder.image).width(320).height(400).url()}
+                    alt={founder.image.alt ?? founder.name}
+                    className="w-80 aspect-[4/5] object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <img
+                    src={founderImg}
+                    alt="Beau Banks"
+                    className="w-80 aspect-[4/5] object-cover"
+                    loading="lazy"
+                  />
+                )}
                 <div className="absolute inset-0 border border-gold/20" />
               </div>
             </div>
             <div>
-              <span className="text-gold text-xs tracking-[0.2em] uppercase mb-4 block">Founder & Development Director</span>
-              <h2 className="font-heading text-3xl text-navy mb-2">Beau Banks</h2>
-              <p className="text-muted-foreground text-sm mb-6">BSc (Hons), MSc (Planning for Major Projects), MRTPI, MNAEA</p>
+              <span className="text-gold text-xs tracking-[0.2em] uppercase mb-4 block">
+                {founder?.jobTitle ?? "Founder & Development Director"}
+              </span>
+              <h2 className="font-heading text-3xl text-navy mb-2">
+                {founder?.name ?? "Beau Banks"}
+              </h2>
+              <p className="text-muted-foreground text-sm mb-6">
+                {founder?.credentials ?? "BSc (Hons), MSc (Planning for Major Projects), MRTPI, MNAEA"}
+              </p>
               <div className="gold-divider-left mb-6" />
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                Beau Banks founded Wollaston Hanks to originate and deliver complex development opportunities through planning expertise and strategic project delivery. With qualifications in both town planning and real estate, Beau brings institutional-grade strategic thinking to every development opportunity.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                A Member of the Royal Town Planning Institute (MRTPI) and Member of the National Association of Estate Agents (MNAEA), Beau combines deep planning knowledge with commercial acumen — enabling the platform to identify, appraise, structure and deliver opportunities across the full development lifecycle.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                His vision is to build Wollaston Hanks into the leading planning-led strategic development platform operating across the UK and US markets.
-              </p>
+              {founder?.bio && founder.bio.length > 0 ? (
+                founder.bio.map((block, i) => (
+                  <p key={block._key ?? i} className="text-muted-foreground leading-relaxed mb-6">
+                    {block.children?.map((child) => child.text).join("")}
+                  </p>
+                ))
+              ) : (
+                <>
+                  <p className="text-muted-foreground leading-relaxed mb-6">
+                    Beau Banks founded Wollaston Hanks to originate and deliver complex development opportunities through planning expertise and strategic project delivery. With qualifications in both town planning and real estate, Beau brings institutional-grade strategic thinking to every development opportunity.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed mb-6">
+                    A Member of the Royal Town Planning Institute (MRTPI) and Member of the National Association of Estate Agents (MNAEA), Beau combines deep planning knowledge with commercial acumen — enabling the platform to identify, appraise, structure and deliver opportunities across the full development lifecycle.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    His vision is to build Wollaston Hanks into the leading planning-led strategic development platform operating across the UK and US markets.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -80,15 +115,21 @@ const AboutPage = () => {
         </div>
       </section>
 
-      <section className="py-16 bg-cream text-center">
+      <section className="py-16 bg-card text-center">
         <div className="container-narrow">
           <h2 className="font-heading text-2xl text-navy mb-6">Engage With the Platform</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/submit-opportunity" className="px-8 py-3.5 border border-gold text-gold text-sm tracking-widest uppercase hover:bg-gold hover:text-navy transition-all">
-              Submit Development Opportunity
+            <Link
+              to="/submit-opportunity"
+              className="px-8 py-3.5 border border-gold text-gold text-sm tracking-widest uppercase hover:bg-gold hover:text-navy transition-all"
+            >
+              Submit an Opportunity <ArrowRight className="w-4 h-4 inline ml-2" />
             </Link>
-            <Link to="/contact" className="px-8 py-3.5 border border-navy text-navy text-sm tracking-widest uppercase hover:bg-navy hover:text-cream transition-all">
-              Investor Enquiry <ArrowRight className="w-4 h-4 inline ml-2" />
+            <Link
+              to="/contact"
+              className="px-8 py-3.5 border border-navy text-navy text-sm tracking-widest uppercase hover:bg-navy hover:text-cream transition-all"
+            >
+              Contact <ArrowRight className="w-4 h-4 inline ml-2" />
             </Link>
           </div>
         </div>

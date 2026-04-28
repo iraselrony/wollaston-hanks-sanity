@@ -19,4 +19,11 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
+  define: {
+    // Required for Sanity Studio to work in Vite
+    "process.env": {},
+  },
+  optimizeDeps: {
+    exclude: ["@sanity/vision"],
+  },
 }));

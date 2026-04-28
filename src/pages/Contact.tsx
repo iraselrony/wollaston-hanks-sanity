@@ -3,8 +3,18 @@ import { MapPin, Phone, Mail } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import PageHero from "@/components/layout/PageHero";
 import heroBg from "@/assets/hero-bg.jpg";
+import { useSiteSettings } from "@/sanity/hooks";
 
 const ContactPage = () => {
+  const { data: settings } = useSiteSettings();
+
+  const phone = settings?.phone ?? "+44 (0)1234 567 890";
+  const email = settings?.email ?? "contact@wollastonhanks.com";
+  const offices = settings?.officeLocations ?? [
+    { city: "London", country: "United Kingdom" },
+    { city: "New York", country: "United States" },
+  ];
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,14 +23,46 @@ const ContactPage = () => {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY,
+          subject: `Wollaston Hanks Enquiry: ${formData.subject}`,
+          from_name: formData.name,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || "Not provided",
+          subject_type: formData.subject,
+          message: formData.message,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        throw new Error(result.message || "Submission failed. Please try again.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again or email us directly.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -46,22 +88,27 @@ const ContactPage = () => {
                   <MapPin className="w-5 h-5 text-gold mt-0.5 shrink-0" />
                   <div>
                     <h3 className="font-heading text-sm text-navy mb-1">Offices</h3>
-                    <p className="text-muted-foreground text-sm">London, United Kingdom</p>
-                    <p className="text-muted-foreground text-sm">New York, United States</p>
+                    {offices.map((o, i) => (
+                      <p key={i} className="text-muted-foreground text-sm">{o.city}, {o.country}</p>
+                    ))}
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <Phone className="w-5 h-5 text-gold mt-0.5 shrink-0" />
                   <div>
                     <h3 className="font-heading text-sm text-navy mb-1">Phone</h3>
-                    <p className="text-muted-foreground text-sm">+44 (0)1234 567 890</p>
+                    <a href={`tel:${phone.replace(/\s/g, "")}`} className="text-muted-foreground text-sm hover:text-gold transition-colors">
+                      {phone}
+                    </a>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <Mail className="w-5 h-5 text-gold mt-0.5 shrink-0" />
                   <div>
                     <h3 className="font-heading text-sm text-navy mb-1">Email</h3>
-                    <p className="text-muted-foreground text-sm">contact@wollastonhanks.com</p>
+                    <a href={`mailto:${email}`} className="text-muted-foreground text-sm hover:text-gold transition-colors">
+                      {email}
+                    </a>
                   </div>
                 </div>
               </div>
@@ -99,11 +146,11 @@ const ContactPage = () => {
                       <select name="subject" required value={formData.subject} onChange={handleChange}
                         className="w-full border border-border px-4 py-3 text-sm bg-background focus:border-gold focus:outline-none transition-colors">
                         <option value="">Select subject</option>
-                        <option value="development">Development Opportunity</option>
-                        <option value="investment">Investment Partnership</option>
-                        <option value="advisory">Strategic Advisory</option>
-                        <option value="transaction">Transaction Advisory</option>
-                        <option value="general">General Enquiry</option>
+                        <option value="Development Opportunity">Development Opportunity</option>
+                        <option value="Investment Partnership">Investment Partnership</option>
+                        <option value="Strategic Advisory">Strategic Advisory</option>
+                        <option value="Transaction Advisory">Transaction Advisory</option>
+                        <option value="General Enquiry">General Enquiry</option>
                       </select>
                     </div>
                   </div>
@@ -115,9 +162,19 @@ const ContactPage = () => {
                       placeholder="Describe your opportunity or requirement." />
                   </div>
 
+                  {error && (
+                    <p className="text-red-600 text-sm border border-red-200 bg-red-50 px-4 py-3">
+                      {error}
+                    </p>
+                  )}
+
                   <div className="pt-2">
-                    <button type="submit" className="px-10 py-3.5 bg-navy text-gold text-sm tracking-widest uppercase hover:bg-navy-light transition-colors border border-gold/40">
-                      Send Message
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="px-10 py-3.5 bg-navy text-gold text-sm tracking-widest uppercase hover:bg-navy-light transition-colors border border-gold/40 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? "Sending..." : "Send Message"}
                     </button>
                   </div>
                 </form>

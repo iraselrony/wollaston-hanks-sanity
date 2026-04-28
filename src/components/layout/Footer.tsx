@@ -1,7 +1,17 @@
 import { Link } from "react-router-dom";
 import { MapPin, Phone, Mail } from "lucide-react";
+import { useSiteSettings } from "@/sanity/hooks";
 
 const Footer = () => {
+  const { data: settings } = useSiteSettings();
+
+  const phone = settings?.phone ?? "+44 (0)1234 567 890";
+  const email = settings?.email ?? "contact@wollastonhanks.com";
+  const offices = settings?.officeLocations ?? [
+    { city: "London", country: "United Kingdom" },
+    { city: "New York", country: "United States" },
+  ];
+
   return (
     <footer className="bg-navy-dark text-cream/70">
       <div className="container-wide py-16">
@@ -44,15 +54,26 @@ const Footer = () => {
             <ul className="space-y-4 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-gold mt-0.5 shrink-0" />
-                <span>London, United Kingdom<br />New York, United States</span>
+                <span>
+                  {offices.map((o, i) => (
+                    <span key={i}>
+                      {o.city}, {o.country}
+                      {i < offices.length - 1 && <br />}
+                    </span>
+                  ))}
+                </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-gold shrink-0" />
-                <span>+44 (0)1234 567 890</span>
+                <a href={`tel:${phone.replace(/\s/g, "")}`} className="hover:text-gold transition-colors">
+                  {phone}
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-gold shrink-0" />
-                <span>contact@wollastonhanks.com</span>
+                <a href={`mailto:${email}`} className="hover:text-gold transition-colors">
+                  {email}
+                </a>
               </li>
             </ul>
           </div>

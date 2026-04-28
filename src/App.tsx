@@ -19,6 +19,7 @@ import USRegionPage from "./pages/USRegion.tsx";
 import AboutPage from "./pages/About.tsx";
 import SubmitOpportunity from "./pages/SubmitOpportunity.tsx";
 import ContactPage from "./pages/Contact.tsx";
+import StudioPage from "./pages/StudioPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Sanity Studio — no Layout wrapper, catches all /studio/* sub-routes */}
+          <Route path="/studio/*" element={<StudioPage />} />
           <Route path="/" element={<Index />} />
           <Route path="/platform" element={<PlatformPage />} />
           <Route path="/platform/strategic-development" element={<StrategicDevelopment />} />

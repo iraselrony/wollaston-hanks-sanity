@@ -16,14 +16,50 @@ const SubmitOpportunity = () => {
     estimatedValue: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY,
+          subject: `New Opportunity Submission: ${formData.enquiryType} — ${formData.assetType || "Type not specified"}`,
+          from_name: formData.name,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || "Not provided",
+          company: formData.company || "Not provided",
+          enquiry_type: formData.enquiryType,
+          asset_type: formData.assetType || "Not specified",
+          location: formData.location || "Not provided",
+          estimated_value: formData.estimatedValue || "Not provided",
+          opportunity_description: formData.description,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        throw new Error(result.message || "Submission failed. Please try again.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again or contact us directly.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -94,12 +130,12 @@ const SubmitOpportunity = () => {
                   <select name="enquiryType" required value={formData.enquiryType} onChange={handleChange}
                     className="w-full border border-border px-4 py-3 text-sm bg-background focus:border-gold focus:outline-none transition-colors">
                     <option value="">Select type</option>
-                    <option value="landowner">Landowner</option>
-                    <option value="investor">Investor</option>
-                    <option value="developer">Developer</option>
-                    <option value="bank">Bank / Institution</option>
-                    <option value="agent">Agent</option>
-                    <option value="other">Other</option>
+                    <option value="Landowner">Landowner</option>
+                    <option value="Investor">Investor</option>
+                    <option value="Developer">Developer</option>
+                    <option value="Bank / Institution">Bank / Institution</option>
+                    <option value="Agent">Agent</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
                 <div>
@@ -107,14 +143,14 @@ const SubmitOpportunity = () => {
                   <select name="assetType" value={formData.assetType} onChange={handleChange}
                     className="w-full border border-border px-4 py-3 text-sm bg-background focus:border-gold focus:outline-none transition-colors">
                     <option value="">Select type</option>
-                    <option value="strategic-land">Strategic Land</option>
-                    <option value="development-site">Development Site</option>
-                    <option value="commercial">Commercial Property</option>
-                    <option value="hospitality">Hospitality / Hotel</option>
-                    <option value="residential">Residential</option>
-                    <option value="distressed">Distressed Asset</option>
-                    <option value="mixed-use">Mixed-Use</option>
-                    <option value="other">Other</option>
+                    <option value="Strategic Land">Strategic Land</option>
+                    <option value="Development Site">Development Site</option>
+                    <option value="Commercial Property">Commercial Property</option>
+                    <option value="Hospitality / Hotel">Hospitality / Hotel</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Distressed Asset">Distressed Asset</option>
+                    <option value="Mixed-Use">Mixed-Use</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
               </div>
@@ -141,9 +177,19 @@ const SubmitOpportunity = () => {
                   placeholder="Provide a brief description of the opportunity, including current status, planning position and any relevant details." />
               </div>
 
+              {error && (
+                <p className="text-red-600 text-sm border border-red-200 bg-red-50 px-4 py-3">
+                  {error}
+                </p>
+              )}
+
               <div className="text-center pt-4">
-                <button type="submit" className="px-10 py-3.5 bg-navy text-gold text-sm tracking-widest uppercase hover:bg-navy-light transition-colors border border-gold/40">
-                  Submit Development Opportunity
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-10 py-3.5 bg-navy text-gold text-sm tracking-widest uppercase hover:bg-navy-light transition-colors border border-gold/40 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {submitting ? "Submitting..." : "Submit Development Opportunity"}
                 </button>
               </div>
 
